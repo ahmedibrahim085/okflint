@@ -256,6 +256,30 @@ class TestExtractMarkdownLinks:
         links = extract_markdown_links("[Neighbor](./voisin.md)", src, tmp_path)
         assert not links[0].broken
 
+    def test_link_forms_existing_target_not_broken(self, tmp_path: Path) -> None:
+        for name in ("B.md", "B — é.md", "C (p).md"):
+            (tmp_path / name).touch()
+        src = tmp_path / "src.md"
+        src.touch()
+        content = (
+            "[1](B.md) [2](B — é.md) [3](<B.md>) [4](<B — é.md>) [5](<C (p).md>) "
+            '[6](C (p).md) [7](B%20%E2%80%94%20%C3%A9.md) [8](B.md "titre")'
+        )
+        links = extract_markdown_links(content, src, tmp_path)
+        assert len(links) == 8
+        assert not any(link.broken for link in links)
+
+    def test_link_forms_missing_target_all_broken(self, tmp_path: Path) -> None:
+        src = tmp_path / "src.md"
+        src.touch()
+        content = (
+            "[a](absent.md) [b](<absent — é.md>) [c](absent (p).md) "
+            "[d](<absent (p).md>) [e](absent%20x.md)"
+        )
+        links = extract_markdown_links(content, src, tmp_path)
+        assert len(links) == 5
+        assert all(link.broken for link in links)
+
 
 # ---------------------------------------------------------------------------
 # build_file_index
