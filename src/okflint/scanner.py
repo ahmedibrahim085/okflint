@@ -8,12 +8,19 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 import yaml
 from beartype import beartype
 
 _WIKILINK_RE = re.compile(r"\[\[([^\[\]#|]+?)(?:#([^\[\]|]*?))?(?:\|([^\[\]]*?))?\]\]")
-_MD_LINK_RE = re.compile(r"\[([^\[\]]*)\]\(([^()]+)\)")
+# Destination: ``<...>`` form (group 2) or bare form (group 3) with spaces and
+# balanced parentheses; optional quoted title; the title is not captured.
+_MD_LINK_RE = re.compile(
+    r"\[([^\[\]]*)\]\(\s*"
+    r"(?:<([^<>\n]*)>|((?:[^()\n]|\([^()\n]*\))+?))"
+    r"(?:\s+(?:\"[^\"\n]*\"|'[^'\n]*'))?\s*\)"
+)
 _FRONTMATTER_RE = re.compile(r"^---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n?", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 _HEADER_RE = re.compile(r"^(#{1,2})\s+(.+)$")
@@ -239,13 +246,14 @@ def extract_markdown_links(
     results: list[MarkdownLink] = []
     for m in _MD_LINK_RE.finditer(content):
         text = m.group(1)
-        target = m.group(2).strip()
+        target = (m.group(2) if m.group(2) is not None else m.group(3)).strip()
         if _URI_SCHEME_RE.match(target):
             results.append(
                 MarkdownLink(text=text, target=target, is_external=True, broken=False)
             )
             continue
-        path_part, _, _fragment = target.partition("#")
+        raw_path, _, _fragment = target.partition("#")
+        path_part = unquote(raw_path)
         # Ignore same-file anchors (#section)
         if path_part == "":
             continue
