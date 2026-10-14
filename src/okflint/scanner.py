@@ -150,7 +150,8 @@ def parse_frontmatter(content: str) -> tuple[dict[str, Any] | None, str]:
             return None, content
         body = content[match.end() :]
         return _to_json_safe(fm), body
-    except yaml.YAMLError:
+    except (yaml.YAMLError, ValueError):
+        # PyYAML raises ValueError, not YAMLError, for impossible dates (2026-02-30).
         return None, content
 
 
