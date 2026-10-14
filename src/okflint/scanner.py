@@ -114,19 +114,21 @@ def _to_json_safe(obj: Any) -> Any:
 
 
 @beartype
-def read_markdown(path: Path) -> str:
+def read_markdown(path: Path, errors: str = "strict") -> str:
     """Read a markdown file as UTF-8, dropping a leading byte-order mark.
 
     Args:
         path: Path of the file to read.
+        errors: Codec error handler (``"strict"`` or ``"replace"``).
 
     Returns:
         File content without a leading BOM.
 
     Raises:
-        UnicodeDecodeError: If the file is not valid UTF-8.
+        UnicodeDecodeError: If the file is not valid UTF-8 and ``errors``
+            is ``"strict"``.
     """
-    return path.read_text(encoding="utf-8-sig")
+    return path.read_text(encoding="utf-8-sig", errors=errors)
 
 
 @beartype

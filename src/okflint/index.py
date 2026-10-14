@@ -109,7 +109,7 @@ def generate_indexes(manifest: Manifest) -> dict[Path, str]:
                     continue
                 if patterns and _is_excluded(child, root, patterns):
                     continue
-                content = read_markdown(child)
+                content = read_markdown(child, errors="replace")
                 fm, _ = parse_frontmatter(content)
                 title = str(fm["title"]) if fm and fm.get("title") else child.stem
                 description = (
