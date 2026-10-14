@@ -30,6 +30,7 @@ from okflint.scanner import (
     extract_markdown_links,
     extract_wikilinks,
     parse_frontmatter,
+    read_markdown,
 )
 
 # ISO date pattern YYYY-MM-DD
@@ -1128,7 +1129,7 @@ def validate_file(
     Returns:
         List of Diagnostic (empty if conformant).
     """
-    content = file_path.read_text(encoding="utf-8")
+    content = read_markdown(file_path)
 
     # Determine the applicable root
     applicable_root = manifest.base.roots[0].path

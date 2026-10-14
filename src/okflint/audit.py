@@ -21,6 +21,7 @@ from okflint.scanner import (
     extract_markdown_links,
     extract_wikilinks,
     parse_frontmatter,
+    read_markdown,
 )
 from okflint.validate import (
     DEFAULT_RESERVED_FILES,
@@ -102,7 +103,7 @@ def analyze_file(
     reserved_names = {name.lower() for name in reserved_files.values()}
     is_reserved = file_path.name.lower() in reserved_names
 
-    content = file_path.read_text(encoding="utf-8")
+    content = read_markdown(file_path)
     lines = len(content.splitlines())
     chars = len(content)
 
@@ -293,7 +294,7 @@ def run_audit(
             report.diagnostics = validate_file(md_file, manifest, _vault_index)
         else:
             is_root = md_file.parent == bundle_root
-            content = md_file.read_text(encoding="utf-8")
+            content = read_markdown(md_file)
             reserved_diags = dispatch_reserved_file(
                 report.path,
                 md_file,

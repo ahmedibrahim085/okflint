@@ -114,6 +114,22 @@ def _to_json_safe(obj: Any) -> Any:
 
 
 @beartype
+def read_markdown(path: Path) -> str:
+    """Read a markdown file as UTF-8, dropping a leading byte-order mark.
+
+    Args:
+        path: Path of the file to read.
+
+    Returns:
+        File content without a leading BOM.
+
+    Raises:
+        UnicodeDecodeError: If the file is not valid UTF-8.
+    """
+    return path.read_text(encoding="utf-8-sig")
+
+
+@beartype
 def parse_frontmatter(content: str) -> tuple[dict[str, Any] | None, str]:
     """Extract the YAML frontmatter from a markdown file.
 

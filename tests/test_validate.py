@@ -1408,6 +1408,18 @@ class TestValidateFile:
         diags = validate_file(f, m, base_index)
         assert "F001" in _codes(diags)
 
+    def test_utf8_bom_file_does_not_trigger_f001(
+        self,
+        minimal_manifest: tuple[Path, Path],
+    ) -> None:
+        manifest_path, root = minimal_manifest
+        m = load_manifest(manifest_path)
+        base_index = build_file_index([r.path for r in m.base.roots])
+        f = root / "bom.md"
+        f.write_bytes(b"\xef\xbb\xbf---\ntype: Reference\n---\n# Title\n")
+        diags = validate_file(f, m, base_index)
+        assert "F001" not in _codes(diags)
+
     def test_s202_fires_end_to_end_via_manifest_split_block(
         self,
         tmp_path: Path,
